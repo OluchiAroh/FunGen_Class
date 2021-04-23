@@ -22,12 +22,101 @@ module load fastqc/0.10.1
 module load trimmomatic
 
 DATADIR=<path to downloaded fastq files>  
+
+# Crheck quaity
 fastqc $DATADIR/*.fastq
- 
-java -jar /mnt/beegfs/home/aubmxa/.conda/envs/BioInfo_Tools/share/trimmomatic-0.39-1/trimmomatic.jar SE -threads 6 -phred33 <fastq file name> <output file name> ILLUMINACLIP:TruSeq2-SE.fa:2:30:10 HEADCROP:5 LEADING:30 TRAILING:30 SLIDINGWINDOW:6:30 MINLEN:30
+
+# trim low quality reads and adapters
+ java -jar /mnt/beegfs/home/aubmxa/.conda/envs/BioInfo_Tools/share/trimmomatic-0.39-1/trimmomatic.jar SE -threads 6 -phred33 <fastq file name> <output file name> ILLUMINACLIP:TruSeq2-SE.fa:2:30:10 HEADCROP:5 LEADING:30 TRAILING:30 SLIDINGWINDOW:6:30 MINLEN:30
 
 ##############################################################################################################################################################################################################
-#HiSAt2 codes - reference alignment
+# GFFreads and HiSAt2 codes - (Download reference genome and gff file using the link shown in the input file section before running this codes)
+#pay attention to the output name extensions in this section
 ################################################################################################################################################################################################
 
 #!/bin/bash
+
+module load hisat2
+module load gffread/
+module load gffcompare/
+module load python/2.7.1
+
+#identify exons and splice sites from the downloaded gff file
+
+gffread <input gff file name> -T -o <output name .gtf>
+extract_splice_sites.py <output_name.gtf> > <output_name.ss>
+extract_exons.py <output_name.gtf> > <output_name.exon>
+
+# Create a HISAT2 index
+hisat2-build -p 20 --ss <output_name.ss> --exon <output_name.exon> <input downloaded genome name> <output_index_name>
+
+##############################################################################################################################################################################################################
+#  HiSAt2 and samtools codes - alignment and conversions
+#pay attention to the output name extensions in this section
+################################################################################################################################################################################################
+
+#!/bin/bash
+
+module load hisat2
+module load gcc/9.3.0
+module load samtools
+
+# mapping
+ hisat2 -p 6 --dta --phred33 -x <path to HISAT2 index files> -U <path to fastq files> -S <output_name.sam>
+ 
+ # samtools view: convert the SAM file into a BAM file  -bS: BAM is the binary format corresponding to the SAM text format.
+ # samtoools sort: convert the BAM file to a sorted BAM file.
+ 
+ samtools view -@ 6 -bS <output_name.sam> > <outputname.bam>
+ samtools sort -@ 6  <output_name.bam> <sortedbam_output_name>
+ 
+ # Index the BAM and get stats
+samtools flagstat  <sortedbam_output_name> > <output_name.txt>
+
+#################################################################################################################################################################################
+#  StringTie - count mapped reads
+#pay attention to the output name extensions in this section
+################################################################################################################################################################################################
+
+#!/bin/bash
+
+
+module load stringtie/1.3.3
+module load python/2.7.1
+
+#count mapped reads
+stringtie -p 6 -e -B -G <path to output_name.gtf> -o <output folder>  -l <fastq file name>  <sortedbam_output_name>
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
