@@ -15,11 +15,10 @@
  
  Most programs used in this project are open-source. However, the following programs and their dependencies needs to be installed.
  
- + FASTQC         (https://github.com/genometools/genometools)
- + Trimmomatic    (https://github.com/oushujun/LTR_FINDER_parallel)
- + HiSAT2         (https://github.com/GSLBiotech/mafft)
- + Samtools       (https://github.com/Cibiv/IQ-TREE)
- + StringTie
+ + FASTQC        
+ + Trimmomatic    
+ + HiSAT2         
+ + Samtools       
  + Gffread 
 
 For Satistical analysis, the following program was run in R
@@ -29,5 +28,5 @@ For Satistical analysis, the following program was run in R
  
  ### Inputs/Outputs ###
  
- Input and output files are specified in the codes using <>. Output of some program serve as an input file for other programs, hence attention should be paid to the last letter added to each output file name in the codes.
+ Input and output files are specified in the codes using <>. Output of some program serve as an input file for other programs, hence attention should be paid to the last letter added to each output file name in the codes. Lastly, link to download files can be found in the input file section
  
