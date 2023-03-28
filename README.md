@@ -21,7 +21,7 @@
  + Samtools       
  + Gffread 
 
-For Satistical analysis, the following program was run in R
+For Statistical analysis, the following program was run in R
 
  + DeSeq2
  + MAplot
