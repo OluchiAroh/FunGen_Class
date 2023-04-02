@@ -8,7 +8,8 @@
    
  ### Introduction ###
  
- This Github page contains the codes used in the project named above. The code includes 2 methods for RNA-seq preprocessing - Fastq reads to count data!
+This Github page contains the code used for the project named above, which involves RNA-seq gene expresssion data preprocessing. This codes includes two  methods for transforming raw Fastq reads into count data!
+ 
  For further inquiries/questions, please contact Oluchi Aroh at olo0002@auburn.edu.
  
  ### Usage ### 
@@ -20,13 +21,17 @@
  + HiSAT2         
  + Samtools       
  + Gffread 
-
+ + StringTie 
+ + Subread
+ 
+ 
 For Statistical analysis, the following program was run in R
 
- + DeSeq2
+ + Bioconductor/DeSeq2
  + MAplot
+ + ggplot2
+ + tidyverse
  
  ### Inputs/Outputs ###
  
-Input and output files are specified in the codes using <>. Output of some program serve as an input file for other programs, hence attention should be paid to the last letter added to each output file name in the codes. Lastly, link to download files can be found in the input file section
- 
+Input and output files are specified in the codes using <>. Output of some program serve as an input file for other programs, hence attention should be paid to the last letter added to each output file name in the codes.
