@@ -8,7 +8,7 @@
    
  ### Introduction ###
  
- This Github page contains the codes used in the project named above. 
+ This Github page contains the codes used in the project named above. The code includes 2 methods for RNA-seq preprocessing - Fastq reads to count data!
  For further inquiries/questions, please contact Oluchi Aroh at olo0002@auburn.edu.
  
  ### Usage ### 
