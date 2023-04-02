@@ -1,46 +1,51 @@
-#Names in <> are file name(s) to be inputted
-#Data download
-
-##############################################################################################################################################################################################################
-
-#!/bin/bash
+#################################################################################################################################################################################
+#  Method 1
+#Here, the reference genome is downloaded and indexed using HISAT2 while expression quantification is done using StringTie
+#Names in <> are file name(s) to be inputted or outputted
+############################################################################################################################################################
+ 
+#list of programs to be installed or module loaded
 
 module load sra
+module load fastqc/0.10.1
+module load trimmomatic
+module load hisat2
+module load gffread/
+module load gffcompare/
+module load python/2.7.1
+module load gcc/9.3.0
+module load samtools
+module load stringtie/1.3.3
 
-fastq-dump -F   SRR1298693
-fastq-dump -F   SRR1298711
-fastq-dump -F   SRR1298698
-fastq-dump -F   SRR1298701
+
+##############################################################################################################################################################################################################
+cd <working directory path...>
+
+#Data download
+
+fastq-dump -F   <SRR.....>
+fastq-dump -F   <SRR.....>
+fastq-dump -F   <SRR.....>
+fastq-dump -F   <SRR....>
+
+echo "download  done!"
 
 ##############################################################################################################################################################################################################
 #FastQC and trimmomatic codes
 ################################################################################################################################################################################################
-
-#!/bin/bash
-
-module load fastqc/0.10.1
-module load trimmomatic
-
 DATADIR=<path to downloaded fastq files>  
 
-# Crheck quaity
+# Check quaity
 fastqc $DATADIR/*.fastq
 
 # trim low quality reads and adapters
  java -jar /mnt/beegfs/home/aubmxa/.conda/envs/BioInfo_Tools/share/trimmomatic-0.39-1/trimmomatic.jar SE -threads 6 -phred33 <fastq file name> <output file name> ILLUMINACLIP:TruSeq2-SE.fa:2:30:10 HEADCROP:5 LEADING:30 TRAILING:30 SLIDINGWINDOW:6:30 MINLEN:30
 
+echo "trimming  done!"
 ##############################################################################################################################################################################################################
-# GFFreads and HiSAt2 codes - (Download reference genome and gff file using the link shown in the input file section before running this codes)
+# GFFreads and HiSAt2 codes - (Download reference genome and gff file before running the next codes)
 #pay attention to the output name extensions in this section
 ################################################################################################################################################################################################
-
-#!/bin/bash
-
-module load hisat2
-module load gffread/
-module load gffcompare/
-module load python/2.7.1
-
 #identify exons and splice sites from the downloaded gff file
 
 gffread <input gff file name> -T -o <output name .gtf>
@@ -48,53 +53,125 @@ extract_splice_sites.py <output_name.gtf> > <output_name.ss>
 extract_exons.py <output_name.gtf> > <output_name.exon>
 
 # Create a HISAT2 index
-hisat2-build -p 20 --ss <output_name.ss> --exon <output_name.exon> <input downloaded genome name> <output_index_name>
+hisat2-build -p 20 --ss <output_name.ss> --exon <output_name.exon> <input downloaded genome name.fa> <output_index_name>
 
+echo "indexing  done!"
 ##############################################################################################################################################################################################################
 #  HiSAt2 and samtools codes - alignment and conversions
 #pay attention to the output name extensions in this section
 ################################################################################################################################################################################################
 
-#!/bin/bash
-
-module load hisat2
-module load gcc/9.3.0
-module load samtools
-
-# mapping
- hisat2 -p 6 --dta --phred33 -x <path to HISAT2 index files> -U <path to fastq files> -S <output_name.sam>
+# alignment
+ hisat2 -p 6 --dta --phred33 -x <path to HISAT2 index files name> -U <path to trimmed fastq files> -S <output_name.sam>
  
- # samtools view: convert the SAM file into a BAM file  -bS: BAM is the binary format corresponding to the SAM text format.
- # samtoools sort: convert the BAM file to a sorted BAM file.
+ #where -p: number of processors.
+
+       --dta: enables the output of transcript alignments in a format compatible StringTie.
+
+      --phred33: specifies the quality score encoding to be phred33
+
+      -x : specifies the path to the HISAT2 index files, which were created previously using the HISAT2-build command.
+
+      -U: specifies the path to the input fastq files that contain the RNA-seq reads to be aligned.
+
+     -S: specifies the name and location of the output SAM file containing the aligned reads.
+       
+ #convert the SAM file into a sorted BAM file
  
- samtools view -@ 6 -bS <output_name.sam> > <outputname.bam>
+ samtools view -@ 6 -bS <output_name.sam> > <outputname.bam>   
  samtools sort -@ 6  <output_name.bam> <sortedbam_output_name>
  
+#where @: number of CPUs.
+      -bS: specify that the input file format is SAM (-S) and the output file format should be BAM (-b)
+
  # Index the BAM and get stats
 samtools flagstat  <sortedbam_output_name> > <output_name.txt>
 
+echo "alignment  done!"
 #################################################################################################################################################################################
-#  StringTie - count mapped reads
+#  StringTie - count mapped reads ie expression quantification
 #pay attention to the output name extensions in this section
 ################################################################################################################################################################################################
-
-#!/bin/bash
-
-
-module load stringtie/1.3.3
-module load python/2.7.1
 
 #count mapped reads
 stringtie -p 6 -e -B -G <path to output_name.gtf> -o <output folder>  -l <fastq file name>  <sortedbam_output_name>
  
+ #where -p 6: number of processors.
+
+       -e: enables the estimation of transcript abundances.
+
+       -B: enables the output of the assembled transcripts in a binary format called Ballgown, which will be used for differential expression analysis.
+
+     -G : specifies the path to the reference annotation file in GTF format.
+
+    -o: specifies the output directory for the transcript assembly and abundance estimation results - OUR COUNT DATA WILL BE HERE!.
+
+   -l: specifies the prefix of the read library to be used for the analysis.
+
+<sortedbam_output_name>: This is the name and path of the input sorted BAM file containing the aligned RNA-seq reads to be assembled and quantified. 
  
+ echo "StringTie  done!"
  
+#################################################################################################################################################################################
+#  Method 2
+#This method uses an already indexed genome and uses featureCounts for expression quantification 
+############################################################################################################################################################
+
+#!/bin/bash
+
+cd <working directory path>
  
- 
- 
- 
- 
- 
+#Data download
+
+fastq-dump -F   <SRR.....>
+fastq-dump -F   <SRR.....>
+fastq-dump -F   <SRR.....>
+fastq-dump -F   <SRR....>
+
+#RUN FASTQC
+mkdir fastqc_out
+
+fastqc ~/*.fastq -o fastqc_out
+
+#Where o: fastqc output folder
+
+#RUN TRIMMOMATIC TO TRIM POOR READS
+
+java -jar ~/trimmomatic-0.39-1/trimmomatic.jar SE -threads 6 -phred33 <fastq file name> <output file name> ILLUMINACLIP:TruSeq2-SE.fa:2:30:10 HEADCROP:5 LEADING:30 TRAILING:30 SLIDINGWINDOW:6:30 MINLEN:30
+echo "trimmomatic done!"
+
+#Look at trimmed reads
+
+mkdir fastqc_trimmed
+fastqc ~/*trimmed.fastq -o fastqc_trimmed
+
+#RUN HISAT2
+
+mkdir HISAT2
+
+#get the genome indices - download indexed genome from HISAT2 website 
+wget  <https://genome-idx.s3.amazonaws,com/hisat.......tar.gz>  
+
+#run alignment
+hisat2 -q -x <specifies the path to the HISAT2 index files name> -U <path to trimmed fastq files> | samtools sort -o <bam file output name>
+echo "alignment  done!"
+
+#RUN FEATURE COUNTS -  Expression Quantification 
+#get gtf - download genome annotation file from ensembl, download gtf.gz
+
+wget http://ftp.ensembl.org/pun/release-106/gtf/....gtf.gz
+
+featureCounts -S 2 -a < path to downloaded annotation file > -o quants/featureCounts.txt <input bam file>
+cat featureCounts.txt | cut -f1, 7 
+echo "featureCounts done!"
+
+#Where -S 2: specifies the strandedness of the library. A value of 2 indicates that the library is strand-specific, which is necessary for accurately counting reads mapping to genes.
+
+       -a: specifies the path to the annotation file in GTF 
+       
+        -o: specifies the name and location of the output file that will be created by featureCounts - OUR COUNT DATA WILL BE HERE.
+
+      <input bam file>: This is the input BAM file that contains aligned reads mapped to the reference genome.
  
  
  
