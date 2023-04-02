@@ -8,7 +8,7 @@
    
  ### Introduction ###
  
-This Github page contains the code used for the project named above, which involves RNA-seq gene expresssion data preprocessing. This codes includes two  methods for transforming raw Fastq reads into count data!
+This Github page contains the code used for the project named above. This code includes two methods for preprocessing raw RNA-seq Fastq reads and converting them into count data for gene expression analysis!
  
  For further inquiries/questions, please contact Oluchi Aroh at olo0002@auburn.edu.
  
